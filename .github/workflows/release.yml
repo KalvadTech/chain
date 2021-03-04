@@ -3,28 +3,6 @@ name: Create artefacts for release
 on: [ release ]
 
 jobs:
-
-  container_gpr:
-    name: Push Docker image to GitHub Packages
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - name: Check out the repo
-        uses: actions/checkout@v2
-
-      - name: Push to GitHub Packages
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          repository: nodlecode/chain/nodle-chain
-          tag_with_ref: true
-          dockerfile: '.maintain/docker/Dockerfile'
-          cache_froms: nodlecode/chain/nodle-chain:latest
-          add_git_labels: true
-  # Build sources for every OS
   github_build_and_release:
     name: Build release binaries
     strategy:
@@ -44,8 +22,8 @@ jobs:
         with:
           toolchain: nightly-2020-10-06
           override: true
-          profile: minimal
-          target: ${{ matrix.target }}
+          profile: default
+          target: wasm32-unknown-unknown
 
       - name: Build | Build
         uses: actions-rs/cargo@v1
