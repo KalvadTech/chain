@@ -1,6 +1,6 @@
 name: Create artefacts for release
 
-on: [ release ]
+on: [push]
 
 jobs:
   github_build_and_release:
