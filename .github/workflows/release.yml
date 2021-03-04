@@ -24,3 +24,43 @@ jobs:
           dockerfile: '.maintain/docker/Dockerfile'
           cache_froms: nodlecode/chain/nodle-chain:latest
           add_git_labels: true
+  # Build sources for every OS
+  github_build_and_release:
+    name: Build release binaries
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    steps:
+      - name: Setup | Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup | Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2020-10-06
+          override: true
+          profile: minimal
+          target: ${{ matrix.target }}
+
+      - name: Build | Build
+        uses: actions-rs/cargo@v1
+        # TODO: Remove this once it's the default
+        with:
+          command: build
+          args: --release --target ${{ matrix.target }} -p nodle-chain
+
+      - name: Build | Release SHA
+        run: echo ${{ github.sha }} > Release.txt
+
+      - name: Build | Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/release/nodle-chain
+          body_path: Release.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
